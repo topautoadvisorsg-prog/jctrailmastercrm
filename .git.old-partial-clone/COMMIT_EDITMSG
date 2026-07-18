@@ -1,0 +1,7 @@
+Add 21 CRM custom layer for JC Trailmaster
+
+Custom CRM modules (activity log, dashboard, messaging compliance,
+permissions, provider events, Twilio safety gating, white-label config),
+CRM frontend pages/nav, core migration, and planning docs (ADR-000
+through ADR-003, Known Limitations V1). Built on an unmodified Twenty
+fork per ADR-000.

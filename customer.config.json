@@ -1,0 +1,64 @@
+{
+  "brand": {
+    "companyName": "JC Trailmaster",
+    "logoLight": "",
+    "logoDark": "",
+    "primaryColor": "#f5820f",
+    "secondaryColor": "#d9480f",
+    "customDomain": "localhost",
+    "emailSender": "info@jctrailmaster.com",
+    "smsSenderName": "JC Trailmaster",
+    "timezone": "America/New_York",
+    "currency": "USD",
+    "dateFormat": "MM/DD/YYYY"
+  },
+  "business": {
+    "address": "5225 John G Glover Ind Ct, Ellenwood, GA 30294",
+    "phone": "770-906-4781",
+    "reviewLinks": {
+      "google": "",
+      "yelp": "",
+      "facebook": ""
+    }
+  },
+  "modules": {
+    "pipeline": true,
+    "jobs": false,
+    "booking": false,
+    "invoicing": false,
+    "automations": false,
+    "reputation": false,
+    "reporting": true,
+    "forms": false,
+    "messaging": true
+  },
+  "pipeline": {
+    "stages": [
+      "New Lead",
+      "Contacted",
+      "Estimate Sent",
+      "Estimate Approved",
+      "Closed Won",
+      "Closed Lost"
+    ]
+  },
+  "jobs": {
+    "types": ["Inspection", "Installation", "Repair", "Quote", "Follow-Up"]
+  },
+  "automation": {
+    "missedCallTextBackEnabled": false,
+    "missedCallDelaySeconds": 60,
+    "reviewRequestEnabled": false,
+    "reviewRequestDelayHours": 2,
+    "reviewPlatform": "google"
+  },
+  "compliance": {
+    "quietHours": {
+      "enabled": true,
+      "start": "20:00",
+      "end": "08:00"
+    },
+    "requireSmsConsentForAutomation": true,
+    "requireEmailConsentForAutomation": true
+  }
+}
