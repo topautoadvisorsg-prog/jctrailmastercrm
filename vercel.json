@@ -2,5 +2,10 @@
   "installCommand": "corepack enable && yarn install --immutable",
   "buildCommand": "yarn nx build twenty-front && node scripts/write-vercel-front-env.mjs",
   "outputDirectory": "packages/twenty-front/build",
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
 }
