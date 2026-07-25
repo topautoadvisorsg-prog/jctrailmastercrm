@@ -1,0 +1,11 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "corepack enable && corepack yarn install --immutable && corepack yarn nx build twenty-server"
+  },
+  "deploy": {
+    "preDeployCommand": "cd packages/twenty-server && node dist/database/scripts/setup-db.js && node dist/command/command run-instance-commands --force --include-slow",
+    "startCommand": "cd packages/twenty-server && NODE_PORT=${NODE_PORT:-${PORT:-3000}} node dist/main"
+  }
+}
