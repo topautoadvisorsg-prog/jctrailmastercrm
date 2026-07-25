@@ -5,6 +5,6 @@
     "buildCommand": "corepack enable && corepack yarn install --immutable && corepack yarn nx build twenty-server"
   },
   "deploy": {
-    "startCommand": "node dist/main"
+    "startCommand": "sh -c 'export NODE_PORT=\"${PORT:-3000}\" && node dist/database/scripts/setup-db.js && node dist/command/command run-instance-commands --force --include-slow && node dist/main'"
   }
 }
