@@ -29,6 +29,7 @@ Custom planning and architecture decisions are documented in:
 - `docs/ADR-001-audit-and-provider-event-persistence.md`
 - `docs/ADR-002-v1-phase-sequencing.md` — JC Trailmaster V1 phase plan (Phase 1 core audit, Phase 2 Service Operations)
 - `docs/ADR-003-twenty-native-permissions-vs-custom-rbac.md` — Twenty native permissions vs. custom RBAC gap analysis and hybrid recommendation
+- `docs/DEPLOYMENT_TROUBLESHOOTING_LOG.md` — full Railway backend deploy debugging history (7 bugs found and fixed, in order, with log evidence)
 - `docs/KNOWN_LIMITATIONS_V1.md` — honest V1 limitations list, kept current for JC Trailmaster onboarding
 - `docs/CRM_POLISH_PLAN.md`
 - `docs/TWENTY_EXTENSION_MAP.md`
