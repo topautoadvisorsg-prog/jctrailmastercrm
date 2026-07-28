@@ -76,6 +76,25 @@ Fix: rather than fight the CLI (which had already refused the domain-port update
 
 **Backend status: VERIFIED WORKING.** Full bug list, in the order each was found and fixed: (1) wrong config location running dev servers, (2) no Redis provisioned, (3) Supabase paused + wrong host, (4) relative config path, (5) missing DI imports in our custom module, (6) missing `ENCRYPTION_KEY`, (7) wrong target port on the Railway domain. Seven real, distinct bugs — each confirmed by log evidence before moving to the next, none guessed.
 
+## Bug #8 (frontend, found during acceptance testing 2026-07-28): redirect loop to backend on every page load
+
+After the backend was fully verified, the deployed frontend (`https://jc-trailmaster-crm.vercel.app`) loaded correctly for under a second, then redirected the browser to `https://jctrailmastercrm-production.up.railway.app/welcome` — a 404, since that's the API-only backend with no pages.
+
+**Root cause:** `DomainServerConfigService.getFrontUrl()` (backend) reads `FRONTEND_URL`, falling back to `SERVER_URL` if unset:
+```ts
+getFrontUrl() {
+  return new URL(
+    this.twentyConfigService.get('FRONTEND_URL') ??
+      this.twentyConfigService.get('SERVER_URL'),
+  );
+}
+```
+We had set `SERVER_URL` (the API's own URL, correctly) but never set `FRONTEND_URL`. So the backend computed the workspace's "canonical" URL as the Railway domain itself. The frontend's `WorkspaceProviderEffect` compares the browser's current hostname against that computed workspace URL and calls `redirectToWorkspaceDomain()` on any mismatch — sending the browser to the (wrong) Railway domain.
+
+**Fix:** set `FRONTEND_URL=https://jc-trailmaster-crm.vercel.app` on the Railway backend service. Redeployed, re-tested in a real browser (not just curl) — sign-in page now renders correctly and stays on the Vercel domain, zero console errors, deep-linked routes don't 404.
+
+**Lesson:** `SERVER_URL` and `FRONTEND_URL` are two distinct variables with a silent fallback between them — setting only one looks fine (backend boots, `/healthz` is green) but breaks a completely different subsystem (workspace domain redirect) that only surfaces once you actually load the frontend in a browser. This is exactly why a green health check was never treated as "done" — confirmed by the user's own verification rule.
+
 ## Rule going forward
 
 No more "wait N minutes and guess" cycles. Every deploy attempt from here gets: the change, the reason, one clear log check, and a plain pass/fail — reported before touching anything else.
