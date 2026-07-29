@@ -5,11 +5,17 @@ import {
   IconCalendar,
   IconMessage,
   IconPhone,
+  IconTool,
   IconUsers,
   type IconComponent,
 } from 'twenty-ui/display';
 
-export type CrmModuleKey = 'contacts' | 'companies' | 'deals' | 'tasks';
+export type CrmModuleKey =
+  | 'contacts'
+  | 'companies'
+  | 'deals'
+  | 'tasks'
+  | 'workOrders';
 
 export type CrmModuleConfig = {
   key: CrmModuleKey;
@@ -218,6 +224,53 @@ export const crmModuleConfigs: Record<CrmModuleKey, CrmModuleConfig> = {
         label: 'Automation readiness',
         description:
           'Missed-call task creation stays disabled until provider webhooks are live.',
+      },
+    ],
+  },
+  workOrders: {
+    key: 'workOrders',
+    label: 'Work Orders',
+    title: 'Work order command center',
+    description:
+      'Turn calls and leads into scheduled service work before estimates and invoices.',
+    objectPath: AppPath.WorkOrdersPage,
+    metricKey: 'workOrders',
+    Icon: IconTool,
+    primaryActions: [
+      {
+        label: 'Open work order records',
+        description:
+          'Use the Twenty Work Orders object for intake, scheduling, ownership, and status.',
+        to: AppPath.WorkOrdersPage,
+        Icon: IconTool,
+      },
+      {
+        label: 'Review related tasks',
+        description: 'Use tasks for follow-up promises and dispatch reminders.',
+        to: AppPath.CrmTasks,
+        Icon: IconCalendar,
+      },
+    ],
+    operatingChecklist: [
+      { label: 'Data model', state: 'Admin setup endpoint ready' },
+      { label: 'Customer linkage', state: 'Person/company/deal relations' },
+      { label: 'Estimate handoff', state: 'Next phase' },
+    ],
+    focusAreas: [
+      {
+        label: 'Structured intake',
+        description:
+          'Capture service type, priority, source, description, and service address at the first touch.',
+      },
+      {
+        label: 'Scheduling readiness',
+        description:
+          'Use planned start and end times so dispatch can become a real calendar workflow.',
+      },
+      {
+        label: 'Estimate bridge',
+        description:
+          'Keep early service value on the work order until formal estimates and invoices are built.',
       },
     ],
   },

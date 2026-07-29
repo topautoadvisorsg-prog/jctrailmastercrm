@@ -6,7 +6,12 @@ import {
   type FrontComponentExecutionContext,
   type FrontComponentHostCommunicationApi,
 } from 'twenty-front-component-renderer';
-import { type AppPath, type EnqueueSnackbarParams } from 'twenty-shared/types';
+import {
+  type AppPath,
+  type EnqueueSnackbarParams,
+  type NavigateOptions,
+  type SidePanelPages,
+} from 'twenty-shared/types';
 
 import { currentUserState } from '@/auth/states/currentUserState';
 import { useCommandMenuConfirmationModal } from '@/command-menu-item/confirmation-modal/hooks/useCommandMenuConfirmationModal';
@@ -19,7 +24,11 @@ import { sidePanelSearchState } from '@/side-panel/states/sidePanelSearchState';
 import { useSnackBar } from '@/ui/feedback/snack-bar-manager/hooks/useSnackBar';
 import { useAtomStateValue } from '@/ui/utilities/state/jotai/hooks/useAtomStateValue';
 import { useSetAtomFamilyState } from '@/ui/utilities/state/jotai/hooks/useSetAtomFamilyState';
-import { assertUnreachable, isDefined } from 'twenty-shared/utils';
+import {
+  assertUnreachable,
+  type getAppPath,
+  isDefined,
+} from 'twenty-shared/utils';
 import { useIcons } from 'twenty-ui/display';
 import { useCopyToClipboard } from '~/hooks/useCopyToClipboard';
 import { useNavigateApp } from '~/hooks/useNavigateApp';
@@ -27,6 +36,20 @@ import { useNavigateApp } from '~/hooks/useNavigateApp';
 const FRONT_COMPONENT_CLIPBOARD_MAX_LENGTH = 64 * 1024;
 const FRONT_COMPONENT_CLIPBOARD_RATE_LIMIT_MS = 1000;
 const FRONT_COMPONENT_CLIPBOARD_PREVIEW_LENGTH = 30;
+
+type FrontComponentOpenSidePanelPageParams = {
+  page: SidePanelPages;
+  pageTitle: string;
+  pageIcon?: string;
+  shouldResetSearchState?: boolean;
+};
+
+type FrontComponentOpenCommandConfirmationModalParams = {
+  title: string;
+  subtitle: string;
+  confirmButtonText?: string;
+  confirmButtonAccent?: 'default' | 'blue' | 'danger';
+};
 
 export const useFrontComponentExecutionContext = ({
   frontComponentId,
@@ -66,22 +89,24 @@ export const useFrontComponentExecutionContext = ({
     commandMenuItemId ?? '',
   );
 
-  const navigate: FrontComponentHostCommunicationApi['navigate'] = async (
-    to,
-    params,
-    queryParams,
-    options,
+  const navigate: FrontComponentHostCommunicationApi['navigate'] = async <
+    T extends AppPath,
+  >(
+    to: T,
+    params?: Parameters<typeof getAppPath<T>>[1],
+    queryParams?: Record<string, any>,
+    options?: NavigateOptions,
   ) => {
-    navigateApp(
-      to as AppPath,
-      params as Parameters<typeof navigateApp>[1],
-      queryParams,
-      options,
-    );
+    navigateApp(to, params, queryParams, options);
   };
 
   const openSidePanelPage: FrontComponentHostCommunicationApi['openSidePanelPage'] =
-    async ({ page, pageTitle, pageIcon, shouldResetSearchState }) => {
+    async ({
+      page,
+      pageTitle,
+      pageIcon,
+      shouldResetSearchState,
+    }: FrontComponentOpenSidePanelPageParams) => {
       navigateSidePanel({
         page,
         pageTitle,
@@ -94,7 +119,12 @@ export const useFrontComponentExecutionContext = ({
     };
 
   const openCommandConfirmationModal: FrontComponentHostCommunicationApi['openCommandConfirmationModal'] =
-    async ({ title, subtitle, confirmButtonText, confirmButtonAccent }) => {
+    async ({
+      title,
+      subtitle,
+      confirmButtonText,
+      confirmButtonAccent,
+    }: FrontComponentOpenCommandConfirmationModalParams) => {
       openConfirmationModal({
         caller: { type: 'frontComponent', frontComponentId },
         title,
@@ -156,7 +186,7 @@ export const useFrontComponentExecutionContext = ({
     };
 
   const updateProgress: FrontComponentHostCommunicationApi['updateProgress'] =
-    async (progress) => {
+    async (progress: number) => {
       if (!isDefined(commandMenuItemId)) {
         return;
       }
@@ -165,7 +195,7 @@ export const useFrontComponentExecutionContext = ({
     };
 
   const copyToClipboard: FrontComponentHostCommunicationApi['copyToClipboard'] =
-    async (text) => {
+    async (text: string) => {
       if (!isNonEmptyString(text)) {
         return;
       }

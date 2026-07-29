@@ -8,6 +8,7 @@ describe('crmModuleConfigs', () => {
     expect(crmModuleConfigs.companies.objectPath).toBe(AppPath.CompaniesPage);
     expect(crmModuleConfigs.deals.objectPath).toBe(AppPath.OpportunitiesPage);
     expect(crmModuleConfigs.tasks.objectPath).toBe(AppPath.TasksPage);
+    expect(crmModuleConfigs.workOrders.objectPath).toBe(AppPath.WorkOrdersPage);
   });
 
   it('keeps each module metric aligned to its module key', () => {
@@ -21,6 +22,7 @@ describe('crmModuleConfigs', () => {
       { key: 'companies', metricKey: 'companies' },
       { key: 'deals', metricKey: 'deals' },
       { key: 'tasks', metricKey: 'tasks' },
+      { key: 'workOrders', metricKey: 'workOrders' },
     ]);
   });
 });

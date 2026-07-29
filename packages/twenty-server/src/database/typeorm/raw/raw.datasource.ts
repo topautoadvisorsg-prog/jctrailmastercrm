@@ -1,5 +1,8 @@
 import { config } from 'dotenv';
 import { DataSource, type DataSourceOptions } from 'typeorm';
+
+import { getDatabasePoolSize } from 'src/database/typeorm/utils/get-database-pool-size.util';
+
 config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
   override: true,
@@ -15,6 +18,7 @@ const typeORMRawModuleOptions: DataSourceOptions = {
           rejectUnauthorized: false,
         }
       : undefined,
+  poolSize: getDatabasePoolSize(),
 };
 
 export const rawDataSource = new DataSource(typeORMRawModuleOptions);

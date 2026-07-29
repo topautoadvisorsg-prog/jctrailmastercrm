@@ -7,6 +7,7 @@ import { CrmPermissionsModule } from 'src/modules/custom/permissions/crm-permiss
 import { ProviderEventModule } from 'src/modules/custom/provider-events/provider-event.module';
 import { TwilioIntegrationModule } from 'src/modules/custom/twilio/twilio-integration.module';
 import { WhiteLabelModule } from 'src/modules/custom/white-label/white-label.module';
+import { WorkOrderMetadataModule } from 'src/modules/custom/work-orders/work-order-metadata.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { WhiteLabelModule } from 'src/modules/custom/white-label/white-label.mod
     MessagingComplianceModule,
     ProviderEventModule,
     TwilioIntegrationModule,
+    WorkOrderMetadataModule,
   ],
   exports: [
     ActivityLogModule,
@@ -26,6 +28,7 @@ import { WhiteLabelModule } from 'src/modules/custom/white-label/white-label.mod
     MessagingComplianceModule,
     ProviderEventModule,
     TwilioIntegrationModule,
+    WorkOrderMetadataModule,
   ],
 })
 export class CrmCustomModule {}

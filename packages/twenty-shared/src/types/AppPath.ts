@@ -23,10 +23,12 @@ export enum AppPath {
   CrmCompanies = '/crm/companies',
   CrmDeals = '/crm/deals',
   CrmTasks = '/crm/tasks',
+  CrmWorkOrders = '/crm/work-orders',
   PeoplePage = '/objects/people',
   CompaniesPage = '/objects/companies',
   TasksPage = '/objects/tasks',
   OpportunitiesPage = '/objects/opportunities',
+  WorkOrdersPage = '/objects/workOrders',
 
   RecordIndexPage = '/objects/:objectNamePlural',
   RecordShowPage = '/object/:objectNameSingular/:objectRecordId',

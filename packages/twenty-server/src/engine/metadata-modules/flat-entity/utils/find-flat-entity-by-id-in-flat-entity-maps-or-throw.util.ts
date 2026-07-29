@@ -1,4 +1,3 @@
-import { t } from '@lingui/core/macro';
 import { isDefined } from 'twenty-shared/utils';
 
 import {
@@ -25,7 +24,7 @@ export const findFlatEntityByIdInFlatEntityMapsOrThrow = <
 
   if (!isDefined(universalIdentifier)) {
     throw new FlatEntityMapsException(
-      t`Could not find flat entity in maps`,
+      'Could not find flat entity in maps',
       FlatEntityMapsExceptionCode.ENTITY_NOT_FOUND,
     );
   }
@@ -34,7 +33,7 @@ export const findFlatEntityByIdInFlatEntityMapsOrThrow = <
 
   if (!isDefined(flatEntity)) {
     throw new FlatEntityMapsException(
-      t`Could not find flat entity in maps`,
+      'Could not find flat entity in maps',
       FlatEntityMapsExceptionCode.ENTITY_NOT_FOUND,
     );
   }

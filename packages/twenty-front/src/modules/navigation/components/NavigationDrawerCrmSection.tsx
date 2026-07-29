@@ -4,6 +4,7 @@ import {
   IconBuildingSkyscraper,
   IconCalendar,
   IconLayoutDashboard,
+  IconTool,
   IconUsers,
 } from 'twenty-ui/display';
 import { AnimatedExpandableContainer } from 'twenty-ui/layout';
@@ -83,6 +84,15 @@ export const NavigationDrawerCrmSection = () => {
           active={
             location.pathname === AppPath.CrmTasks ||
             location.pathname === AppPath.TasksPage
+          }
+        />
+        <NavigationDrawerItem
+          label="Work Orders"
+          to={AppPath.CrmWorkOrders}
+          Icon={IconTool}
+          active={
+            location.pathname === AppPath.CrmWorkOrders ||
+            location.pathname === AppPath.WorkOrdersPage
           }
         />
       </AnimatedExpandableContainer>

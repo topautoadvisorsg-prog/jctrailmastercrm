@@ -5,6 +5,7 @@ const crmDashboardMetricKeySchema = z.enum([
   'companies',
   'deals',
   'tasks',
+  'workOrders',
 ]);
 
 const crmDashboardMetricSchema = z.object({

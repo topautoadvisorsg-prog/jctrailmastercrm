@@ -3,7 +3,7 @@ import { isNonEmptyString } from '@sniptt/guards';
 import { isDefined } from 'twenty-shared/utils';
 
 import { getTokenPair } from '@/apollo/utils/getTokenPair';
-import { type CrmDashboardData } from '@/pages/crm/types/CrmDashboardData';
+import { type CrmDashboardData } from '~/pages/crm/types/CrmDashboardData';
 import { crmDashboardDataSchema } from '~/pages/crm/schemas/crmDashboardDataSchema';
 import { REACT_APP_SERVER_BASE_URL } from '~/config';
 

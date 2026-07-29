@@ -11,14 +11,7 @@ import { MobileNavigationBar } from '@/navigation/components/MobileNavigationBar
 import { PageDragDropProvider } from '@/navigation-menu-item/display/dnd/providers/PageDragDropProvider';
 import { useIsSettingsPage } from '@/navigation/hooks/useIsSettingsPage';
 import { OBJECT_SETTINGS_WIDTH } from '@/settings/data-model/constants/ObjectSettings';
-import { BackgroundMockNavigationDrawer } from '@/sign-in-background-mock/components/BackgroundMockNavigationDrawer';
-import { Suspense, lazy, useContext } from 'react';
-
-const BackgroundMockPage = lazy(() =>
-  import('@/sign-in-background-mock/components/BackgroundMockPage').then(
-    (module) => ({ default: module.BackgroundMockPage }),
-  ),
-);
+import { useContext } from 'react';
 import { useShowFullscreen } from '@/ui/layout/fullscreen/hooks/useShowFullscreen';
 import { useShowAuthModal } from '@/ui/layout/hooks/useShowAuthModal';
 import { NAVIGATION_DRAWER_CONSTRAINTS } from '@/ui/layout/resizable-panel/constants/NavigationDrawerConstraints';
@@ -95,30 +88,19 @@ export const DefaultLayout = () => {
             >
               <PageDragDropProvider>
                 {!showAuthModal && <KeyboardShortcutMenu />}
-                {showAuthModal ? (
-                  <StyledNavigationDrawerWrapper>
-                    <BackgroundMockNavigationDrawer />
-                  </StyledNavigationDrawerWrapper>
-                ) : useShowFullScreen ? null : (
+                {!showAuthModal && !useShowFullScreen && (
                   <StyledNavigationDrawerWrapper>
                     <AppNavigationDrawer />
                   </StyledNavigationDrawerWrapper>
                 )}
                 {showAuthModal ? (
-                  <>
-                    <StyledMainContainer>
-                      <Suspense fallback={null}>
-                        <BackgroundMockPage />
-                      </Suspense>
-                    </StyledMainContainer>
-                    <AnimatePresence mode="wait">
-                      <LayoutGroup>
-                        <AuthModal>
-                          <Outlet />
-                        </AuthModal>
-                      </LayoutGroup>
-                    </AnimatePresence>
-                  </>
+                  <AnimatePresence mode="wait">
+                    <LayoutGroup>
+                      <AuthModal>
+                        <Outlet />
+                      </AuthModal>
+                    </LayoutGroup>
+                  </AnimatePresence>
                 ) : (
                   <StyledMainContainer>
                     <AppErrorBoundary FallbackComponent={AppPageErrorFallback}>

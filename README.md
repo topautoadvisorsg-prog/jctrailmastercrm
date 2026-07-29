@@ -5,13 +5,16 @@
 ## Current Build Status
 
 - Platform direction: true Twenty fork, not a standalone rewrite.
-- CRM feature layer: `/crm` now calls the authenticated `GET /rest/crm/dashboard` endpoint for live workspace counts, recent CRM audit activity, and provider-event health.
-- CRM module pages: `/crm/contacts`, `/crm/companies`, `/crm/deals`, and `/crm/tasks` provide 21 CRM command surfaces that hand off to Twenty's native object records.
+- CRM feature layer: `/crm` now calls the authenticated `GET /rest/crm/dashboard` endpoint for live workspace counts, optional Work Order counts, recent CRM audit activity, and provider-event health.
+- CRM module pages: `/crm/contacts`, `/crm/companies`, `/crm/deals`, `/crm/tasks`, and `/crm/work-orders` provide 21 CRM command surfaces that hand off to Twenty's native object records.
+- Work Orders foundation: the admin-guarded setup endpoint is deployed and production-verified for the `workOrder` custom object, operational fields, idempotent repair, relations to people/companies/opportunities/workspace members, and native Twenty object navigation. Native create, edit, search, delete, notes, tasks, files, and timeline tabs were verified against the real workspace on 2026-07-29.
+- Dashboard Work Order count: production backend deployment `16da6491-ee5e-4388-8f87-28c8c5dec45a` is live with image `sha256:0f31b7de249fdf10b06390694980a90a6c50ccf3459a565691d6c471acab27c6`; authenticated dashboard calls return `200`, and a QA Work Order smoke test proved count movement `0 -> 1 -> 0` with cleanup.
 - Frontend shell: `/crm` dashboard route and `21 CRM` navigation section are in place.
 - Backend extension boundary: custom CRM modules live under `packages/twenty-server/src/modules/custom`.
 - Compliance foundation: SMS consent, opt-out, quiet-hour checks, and provider placeholders are implemented.
 - Audit foundation: CRM activity log and provider-event idempotency persistence are implemented through core migrations.
-- Build pipeline: `corepack yarn nx build twenty-front` and `npx nest build --path ./tsconfig.build.json` pass.
+- Verification gate: direct frontend typecheck, focused Jest suites, package-specific lint, formatting, and `npx nest build --path ./tsconfig.build.json` pass locally.
+- Frontend bundle note: the Nx/Vite production frontend build can time out in this Windows Codex shell even after tests/typecheck/lint pass. Treat clean CI/Vercel build logs as the release bundle gate and keep wrapper timeouts documented separately from product defects.
 - Provider keys: intentionally placeholders for now. No live Twilio, Stripe, Resend, Google, or AI provider calls are required for the current UI/build phase.
 
 ## Architecture
@@ -75,6 +78,7 @@ npx oxfmt --check <changed files>
 npx oxlint -c packages/twenty-front/.oxlintrc.json <changed frontend files>
 npx oxlint -c packages/twenty-server/.oxlintrc.json <changed server files>
 npx jest --config packages/twenty-server/jest.config.mjs <changed server spec files> --runInBand
+(cd packages/twenty-front && npx tsgo -p tsconfig.json)
 git diff --check
 ```
 
@@ -172,7 +176,19 @@ Temporary: no. This is a source cleanup.
 
 Issue: the first `/crm` page was a static foundation shell, which was useful for navigation but not yet a real CRM operating surface.
 
-Resolution: the server now exposes `GET /rest/crm/dashboard` under the authenticated CRM module. It aggregates contacts, companies, deals, and tasks through Twenty's workspace repository layer, then reads recent CRM audit entries and provider-event health from the custom core tables. The frontend dashboard now renders live KPIs, recent activity, provider health, loading states, retry behavior, and fallback messaging when the backend is unavailable.
+Resolution: the server now exposes `GET /rest/crm/dashboard` under the authenticated CRM module. It aggregates contacts, companies, deals, tasks, and Work Orders through exact workspace-table counts, then reads recent CRM audit entries and provider-event health from the custom core tables when those tables are available. The frontend dashboard now renders live KPIs, recent activity, provider health, loading states, retry behavior, and fallback messaging when the backend is unavailable.
+
+Issue: production dashboard counts initially failed with a permission error, and the first direct core-query hotfix failed in production with `Cannot read properties of undefined (reading 'manager')`.
+
+Resolution: dashboard counts now use exact workspace-table counts through the injected core datasource with Twenty permission bypass options limited to this aggregate dashboard endpoint. The core query helper preserves TypeORM's datasource method binding, and focused tests cover missing Work Order metadata/table states, permission-style failures, missing CRM activity/provider tables, and datasource binding regression.
+
+Temporary: no. This is the durable dashboard aggregate path for the custom CRM command center.
+
+Issue: production logs emitted Lingui `Uncompiled message detected` warnings for the internal flat-entity exception message `Could not find flat entity in maps`.
+
+Resolution: the internal developer exception message now uses a plain string, matching adjacent flat-entity helpers. User-facing exception text still flows through the existing `userFriendlyMessage` descriptor path.
+
+Temporary: no. Fresh production logs after deployment `16da6491-ee5e-4388-8f87-28c8c5dec45a` and the dashboard smoke test showed no matching Lingui warnings.
 
 Temporary: no. This is the first production feature-layer slice and keeps using Twenty's auth, workspace context, and object repositories.
 
@@ -188,9 +204,9 @@ Resolution: use package-specific lint configs for targeted linting. The targeted
 
 Temporary: no code workaround was added. This documents the current tool behavior so CI/local verification commands stay explicit.
 
-Issue: on Windows, server `oxlint` can panic from allocator pressure when checking TypeScript server files with default parallelism.
+Issue: on Windows, server `oxlint` can panic from allocator pressure when checking TypeScript server files with default parallelism or while other lint/build processes are running.
 
-Resolution: rerun targeted server lint with `--threads=1` while keeping the package-specific server config. The same CRM dashboard server files pass with zero warnings and zero errors, and the Nest server build also passes.
+Resolution: rerun targeted server lint by itself with `--threads 1` while keeping the package-specific server config. The same CRM dashboard and Work Orders server files pass with zero warnings and zero errors, and the Nest server build also passes.
 
 Temporary: no application workaround was added. This is a local tooling invocation constraint, not a product-code shortcut.
 
@@ -327,6 +343,80 @@ Issue: Twilio provider readiness only checked for truthy environment variables, 
 Resolution: Twilio readiness now trims credentials, reports missing credential keys, and requires `TWILIO_LIVE_SENDS_APPROVED=true` before live sends can be considered available. The current `sendSms` method still raises a service-unavailable error, and focused tests cover whitespace credentials, approval gating, and the disabled-send response.
 
 Temporary: no. This is permanent provider-safety hardening before real API credentials are introduced.
+
+### CRM Auth Background Leak Fix
+
+Issue: live anonymous audit of `https://jc-trailmaster-crm.vercel.app/welcome` showed the sign-in modal rendered over Twenty's mock workspace background, including app navigation, seeded companies, and demo objects. Even though that background is mock/demo UI, it looks like customer CRM data and is unacceptable on a production login screen.
+
+Resolution: `DefaultLayout` no longer renders `BackgroundMockNavigationDrawer` or `BackgroundMockPage` behind auth/onboarding modals. Auth pages now show only the authentication modal over a neutral layout background, while authenticated routes continue to render the real workspace navigation.
+
+Temporary: no. This is a production auth UX/security fix discovered during the functional audit.
+
+### CRM Functional Audit Findings
+
+Issue: live public workspace metadata for `https://jc-trailmaster-crm.vercel.app` currently returns the display name `JC Test`, while the authoritative customer config and product docs identify the deployment as JC Trailmaster.
+
+Resolution: no code workaround was applied. The solid fix is to correct the production workspace record through the normal authenticated/admin provisioning path, add the final logo when available, and then verify the auth screens and public workspace metadata again.
+
+Temporary: no. This remains an open production-configuration fix, not a temporary frontend mask.
+
+Issue: the functional audit confirmed that estimates, customer invoicing, service dispatch calendar, unified communications inbox, missed-call text-back, reputation automation, and full service work-order workflows are not currently built product modules.
+
+Resolution: these remain intentionally deferred modules. They should stay hidden/disabled until designed and implemented on top of the stable Twenty-native CRM foundation.
+
+Temporary: no. This is the current product boundary, documented in `docs/CRM_FUNCTIONAL_AUDIT.md` and `docs/KNOWN_LIMITATIONS_V1.md`.
+
+Issue: the planned AI receptionist should not be integrated before the CRM can turn a service call into structured work. Work Orders now have a foundation, but without production-ready Work Orders plus Estimates and Invoices, a receptionist would still mostly create notes instead of complete operational records.
+
+Resolution: `docs/CRM_FUNCTIONAL_AUDIT.md` now includes an `AI Receptionist Readiness` section with Retell AI as the recommended provider and sequences the roadmap as QA → locked CRM → Work Orders → Estimates → Invoices → Retell AI → unified communications inbox.
+
+Temporary: no. This is a product architecture gate, not a placeholder workaround.
+
+### CRM Work Orders Foundation
+
+Issue: the CRM had no structured place for calls, leads, repairs, and service requests to become operational work. That would make Retell AI or missed-call automation create loose notes instead of actionable service records.
+
+Resolution: added a Twenty-native Work Orders foundation. The backend exposes authenticated, `DATA_MODEL`-guarded setup endpoints at `GET /rest/crm/work-orders-setup` and `POST /rest/crm/work-orders-setup` that create/check a customer-owned custom object named `workOrder` with status, priority, service type, source, description, service address, schedule timestamps, completion timestamp, estimated amount, and relations to customer, company, opportunity, and assigned technician. The dashboard now counts Work Orders when the object exists and safely reports zero before setup. The frontend adds `/crm/work-orders`, navigation, dashboard links, and the native object handoff to `/objects/workOrders`.
+
+Issue: the first setup URL used `/rest/crm/work-orders/setup`, which matched Twenty's generic REST object route shape and was intercepted as an invalid object query before the custom controller could run.
+
+Resolution: moved the setup contract to `/rest/crm/work-orders-setup`, keeping it under the CRM namespace while avoiding the generic REST wildcard.
+
+Temporary: no. This is the permanent setup route for the Work Orders metadata installer.
+
+Issue: the first production setup POST failed after creating the `workOrder` object because Supabase session pooling returned `(EMAXCONNSESSION) max clients reached in session mode - max clients are limited to pool_size: 15`.
+
+Resolution: capped TypeORM core/raw pool size through `PG_POOL_MAX_CONNECTIONS`, set production to `PG_POOL_MAX_CONNECTIONS=5`, and made the Work Orders installer build relation field inputs sequentially to reduce metadata lookup pressure. Deployment `7e4b4661-38de-4ce0-83fa-400f02961336` repaired the partial metadata state.
+
+Temporary: no. This is the permanent database-pool and installer behavior for Supabase session-mode deployments.
+
+Issue: production Work Orders proof needed to verify installer idempotency and native Twenty behavior before Estimates, Invoices, Retell AI, or dispatch could begin.
+
+Resolution: production verification on 2026-07-29 confirmed:
+
+- `GET /rest/crm/work-orders-setup` returns `200`, `isReady: true`, object `ee836032-6ecf-41a6-9af0-942a042fc0c8`, and all 14 expected fields as existing.
+- First repeat `POST /rest/crm/work-orders-setup` returns `201`, `isReady: true`, with 14 existing fields, 0 created fields, and 0 missing fields.
+- Second repeat `POST /rest/crm/work-orders-setup` returns the same clean idempotent result with no duplicate object, fields, or relations.
+- Native `/objects/workOrders` opens in the deployed frontend and Work Orders appears in Twenty's native workspace object navigation.
+- Native UI create, edit/autosave, list count, full record open, notes, tasks, files/attachments, and timeline tabs were verified.
+- REST create/read/update/search/delete was verified, including `name[ilike]` search filtering.
+- QA Work Order, QA note, and QA task records were deleted after verification; final production Work Order count is 0.
+
+Temporary: no. Work Orders are now the production-proven service-operations foundation. Deep job workflows still need later product work: labor, parts, photos, dispatch history, estimate conversion, invoice conversion, and automation.
+
+Issue: Railway displays the project name as `attractive-fascination`, while the intended customer-facing service is JC Trailmaster CRM.
+
+Resolution: the service target itself is verified: workspace `topautoadvisorsg-prog's Projects`, environment `production`, service `jctrailmastercrm`, and URL `https://jctrailmastercrm-production.up.railway.app`. Treat the project-name mismatch as configuration cleanup, not a hotfix blocker, as long as the service/environment/URL remain verified before deployment.
+
+Temporary: no. Rename/relabel the Railway project when convenient to reduce future operator confusion.
+
+### CRM Direct Typecheck Stabilization
+
+Issue: direct frontend typecheck exposed two CRM regressions: the dashboard hook imported CRM types through an unsupported `@/pages` alias, and the hook tests mocked auth tokens without the generated `expiresAt` and `refreshToken` fields required by `AuthTokenPair`.
+
+Resolution: the CRM dashboard hook now imports its inferred Zod type through the working `~/pages` alias, and the test fixtures now use complete token-pair objects. A separate unmodified front-component hook also had isolated implicit-parameter type errors; that was fixed with explicit host-API parameter annotations matching the existing SDK/shared contracts, without changing runtime behavior.
+
+Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a green verification gate for this branch.
 
 ## API Keys
 

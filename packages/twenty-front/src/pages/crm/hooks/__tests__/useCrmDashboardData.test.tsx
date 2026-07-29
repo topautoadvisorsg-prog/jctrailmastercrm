@@ -16,6 +16,8 @@ const mockGetTokenPair = getTokenPair as jest.MockedFunction<
 
 const mockFetch = fetch as jest.MockedFunction<typeof fetch>;
 
+const authTokenExpiresAt = '2100-01-01T00:00:00.000Z';
+
 const dashboardData = {
   generatedAt: '2026-05-29T00:00:00.000Z',
   workspaceId: 'workspace-id',
@@ -47,7 +49,12 @@ describe('useCrmDashboardData', () => {
   it('fetches the CRM dashboard with auth and schema headers', async () => {
     mockGetTokenPair.mockReturnValue({
       accessOrWorkspaceAgnosticToken: {
+        expiresAt: authTokenExpiresAt,
         token: 'access-token',
+      },
+      refreshToken: {
+        expiresAt: authTokenExpiresAt,
+        token: 'refresh-token',
       },
     });
     mockFetch.mockResolvedValueOnce({
@@ -78,7 +85,12 @@ describe('useCrmDashboardData', () => {
   it('does not send an empty bearer token', async () => {
     mockGetTokenPair.mockReturnValue({
       accessOrWorkspaceAgnosticToken: {
+        expiresAt: authTokenExpiresAt,
         token: '',
+      },
+      refreshToken: {
+        expiresAt: authTokenExpiresAt,
+        token: 'refresh-token',
       },
     });
     mockFetch.mockResolvedValueOnce({

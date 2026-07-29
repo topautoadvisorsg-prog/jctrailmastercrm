@@ -2,6 +2,9 @@ import { type TypeOrmModuleOptions } from '@nestjs/typeorm';
 
 import { config } from 'dotenv';
 import { DataSource, type DataSourceOptions, type LogLevel } from 'typeorm';
+
+import { getDatabasePoolSize } from 'src/database/typeorm/utils/get-database-pool-size.util';
+
 config({
   path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
   override: true,
@@ -76,6 +79,7 @@ export const typeORMCoreModuleOptions: TypeOrmModuleOptions = {
     idleTimeoutMillis: Number(process.env.PG_POOL_IDLE_TIMEOUT_MS ?? 600000),
     allowExitOnIdle: process.env.PG_POOL_ALLOW_EXIT_ON_IDLE === 'true',
   },
+  poolSize: getDatabasePoolSize(),
 };
 
 export const connectionSource = new DataSource(

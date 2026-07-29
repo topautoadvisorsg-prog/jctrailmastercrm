@@ -14,6 +14,7 @@ import {
   IconPhone,
   IconRefresh,
   IconShield,
+  IconTool,
   IconUsers,
 } from 'twenty-ui/display';
 import { MOBILE_VIEWPORT, themeCssVariables } from 'twenty-ui/theme-constants';
@@ -52,6 +53,12 @@ const objectLinks = [
     to: AppPath.CrmTasks,
     Icon: IconCalendar,
   },
+  {
+    label: 'Work Orders',
+    description: 'Jobs, service status, schedules, and technician ownership.',
+    to: AppPath.CrmWorkOrders,
+    Icon: IconTool,
+  },
 ];
 
 const metricIconByKey: Record<CrmDashboardMetricKey, typeof IconUsers> = {
@@ -59,6 +66,7 @@ const metricIconByKey: Record<CrmDashboardMetricKey, typeof IconUsers> = {
   companies: IconBuildingSkyscraper,
   deals: IconBriefcase,
   tasks: IconCalendar,
+  workOrders: IconTool,
 };
 
 const readinessGroups = [
@@ -495,7 +503,7 @@ export const CrmDashboardPage = () => {
       label: 'CRM records',
       value:
         summary?.totalRecords.toLocaleString() ?? (isLoading ? '...' : '0'),
-      description: 'Contacts, companies, deals, and tasks.',
+      description: 'Contacts, companies, deals, tasks, and work orders.',
       Icon: IconChartBar,
     },
     {
@@ -541,8 +549,9 @@ export const CrmDashboardPage = () => {
             <StyledTitle>Sales and customer operations</StyledTitle>
             <StyledSubtitle>
               Live CRM command center for contacts, companies, deals, tasks,
-              provider events, and audit activity. External communication
-              providers stay on placeholders until credentials are configured.
+              work orders, provider events, and audit activity. External
+              communication providers stay on placeholders until credentials are
+              configured.
             </StyledSubtitle>
           </StyledHeader>
 

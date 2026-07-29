@@ -336,7 +336,28 @@ const isCrmModuleKey = (value: string | undefined): value is CrmModuleKey =>
   value === 'contacts' ||
   value === 'companies' ||
   value === 'deals' ||
-  value === 'tasks';
+  value === 'tasks' ||
+  value === 'workOrders';
+
+const crmModuleRouteKeyByPathSegment: Record<string, CrmModuleKey> = {
+  'work-orders': 'workOrders',
+};
+
+const resolveCrmModuleKey = (
+  moduleKey: string | undefined,
+): CrmModuleKey | null => {
+  if (!moduleKey) {
+    return null;
+  }
+
+  const resolvedModuleKey = crmModuleRouteKeyByPathSegment[moduleKey];
+
+  if (resolvedModuleKey) {
+    return resolvedModuleKey;
+  }
+
+  return isCrmModuleKey(moduleKey) ? moduleKey : null;
+};
 
 export const CrmModulePage = () => {
   const { moduleKey } = useParams();
@@ -345,11 +366,13 @@ export const CrmModulePage = () => {
     metadataVersion: currentWorkspace?.metadataVersion,
   });
 
-  if (!isCrmModuleKey(moduleKey)) {
+  const resolvedModuleKey = resolveCrmModuleKey(moduleKey);
+
+  if (resolvedModuleKey === null) {
     return <Navigate to={AppPath.CrmDashboard} replace />;
   }
 
-  const moduleConfig = crmModuleConfigs[moduleKey];
+  const moduleConfig = crmModuleConfigs[resolvedModuleKey];
   const metric = data?.metrics.find(
     (currentMetric) => currentMetric.key === moduleConfig.metricKey,
   );

@@ -1,5 +1,5 @@
 export type CrmDashboardMetric = {
-  key: 'contacts' | 'companies' | 'deals' | 'tasks';
+  key: 'contacts' | 'companies' | 'deals' | 'tasks' | 'workOrders';
   label: string;
   value: number;
   description: string;
