@@ -1,7 +1,7 @@
 {
   "framework": "vite",
   "installCommand": "corepack yarn install --immutable",
-  "buildCommand": "corepack yarn nx build twenty-front && node scripts/write-vercel-front-env.mjs",
+  "buildCommand": "corepack yarn workspace twenty-front build && node scripts/write-vercel-front-env.mjs",
   "outputDirectory": "packages/twenty-front/build",
   "rewrites": [
     {

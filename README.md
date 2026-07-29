@@ -418,6 +418,14 @@ Resolution: the CRM dashboard hook now imports its inferred Zod type through the
 
 Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a green verification gate for this branch.
 
+### CRM Vercel Frontend Build Stabilization
+
+Issue: the GitHub-triggered Vercel deployment for commit `be1185375297349f9c195d30512e834dca8a609e` failed. The local unauthorized Vercel CLI could not read the team deployment logs, but a direct local Vite reproduction reached the transform phase and then failed with `JavaScript heap out of memory` when constrained to a 2 GB heap.
+
+Resolution: Vercel now builds the frontend through the existing `twenty-front` package build script via `corepack yarn workspace twenty-front build`, instead of the generic Nx wrapper path. That package script already sets the production Vite build environment and a larger Node heap for the heavy Twenty frontend bundle, then the root Vercel command still runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
+
+Temporary: no. This is the durable Vercel build entrypoint for the production frontend and aligns deployment with the package-owned build contract.
+
 ## API Keys
 
 Keep provider keys empty until the UI and backend foundations are ready.
