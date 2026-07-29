@@ -1,7 +1,7 @@
 {
   "framework": "vite",
   "installCommand": "corepack yarn install --immutable",
-  "buildCommand": "NX_DAEMON=false NX_PARALLEL=1 NODE_OPTIONS=--max-old-space-size=6144 corepack yarn nx build twenty-front --parallel=1 && node scripts/write-vercel-front-env.mjs",
+  "buildCommand": "NX_DAEMON=false NX_PARALLEL=1 NODE_OPTIONS=--max-old-space-size=4096 corepack yarn nx build twenty-front --parallel=1 && node scripts/write-vercel-front-env.mjs",
   "outputDirectory": "packages/twenty-front/build",
   "rewrites": [
     {

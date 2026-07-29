@@ -420,9 +420,9 @@ Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a 
 
 ### CRM Vercel Frontend Build Stabilization
 
-Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, and `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: the original Nx build reached Vite chunk rendering and was killed by a Vercel out-of-memory event, while package/direct Vite builds failed earlier because they skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`.
+Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b`, and `1b0da878aed69b90feaeb761c0b5862c5e132270` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: package/direct Vite builds skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`; Nx builds correctly reached `twenty-front:build`, transformed all 16,514 modules, and were then killed by Vercel out-of-memory events during chunk rendering.
 
-Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 6144 MB to leave container headroom, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
+Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 4096 MB to leave more container headroom for Rollup/Vite native overhead, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
 
 Temporary: no. This keeps the production frontend on the repository's canonical Nx dependency graph while constraining memory for Vercel's current build container.
 
