@@ -420,11 +420,11 @@ Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a 
 
 ### CRM Vercel Frontend Build Stabilization
 
-Issue: the GitHub-triggered Vercel deployment for commit `be1185375297349f9c195d30512e834dca8a609e` failed. The local unauthorized Vercel CLI could not read the team deployment logs, but a direct local Vite reproduction reached the transform phase and then failed with `JavaScript heap out of memory` when constrained to a 2 GB heap.
+Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e` and `972c6e702234f8605acace38830a4d6fa221f9cd` failed. The local unauthorized Vercel CLI could not read the team deployment logs, but direct local Vite reproduction reached the transform phase and then failed with `JavaScript heap out of memory` when constrained to a 2 GB heap. Vercel build containers have finite memory, so using the package script's 8192 MB heap can consume the full container instead of leaving headroom for the build process.
 
-Resolution: Vercel now builds the frontend through the existing `twenty-front` package build script via `corepack yarn workspace twenty-front build`, instead of the generic Nx wrapper path. That package script already sets the production Vite build environment and a larger Node heap for the heavy Twenty frontend bundle, then the root Vercel command still runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
+Resolution: Vercel now builds the frontend through direct Vite from `packages/twenty-front` with `NODE_ENV=production` and `NODE_OPTIONS=--max-old-space-size=6144`, then returns to the repo root and runs `scripts/write-vercel-front-env.mjs` to inject the backend URL. This bypasses the Nx wrapper and avoids using a heap size equal to the whole Vercel build container.
 
-Temporary: no. This is the durable Vercel build entrypoint for the production frontend and aligns deployment with the package-owned build contract.
+Temporary: no. This is the durable Vercel build entrypoint for the production frontend and aligns deployment with the frontend package's Vite build contract.
 
 ## API Keys
 
