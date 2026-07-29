@@ -420,11 +420,11 @@ Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a 
 
 ### CRM Vercel Frontend Build Stabilization
 
-Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e` and `972c6e702234f8605acace38830a4d6fa221f9cd` failed. The local unauthorized Vercel CLI could not read the team deployment logs, but direct local Vite reproduction reached the transform phase and then failed with `JavaScript heap out of memory` when constrained to a 2 GB heap. Vercel build containers have finite memory, so using the package script's 8192 MB heap can consume the full container instead of leaving headroom for the build process.
+Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, and `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: the original Nx build reached Vite chunk rendering and was killed by a Vercel out-of-memory event, while package/direct Vite builds failed earlier because they skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`.
 
-Resolution: Vercel now builds the frontend through direct Vite from `packages/twenty-front` with `NODE_ENV=production` and `NODE_OPTIONS=--max-old-space-size=6144`, then returns to the repo root and runs `scripts/write-vercel-front-env.mjs` to inject the backend URL. This bypasses the Nx wrapper and avoids using a heap size equal to the whole Vercel build container.
+Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 6144 MB to leave container headroom, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
 
-Temporary: no. This is the durable Vercel build entrypoint for the production frontend and aligns deployment with the frontend package's Vite build contract.
+Temporary: no. This keeps the production frontend on the repository's canonical Nx dependency graph while constraining memory for Vercel's current build container.
 
 ## API Keys
 
