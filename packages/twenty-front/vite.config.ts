@@ -25,12 +25,15 @@ export default defineConfig(({ mode }) => {
     SSL_CERT_PATH,
     SSL_KEY_PATH,
     REACT_APP_PORT,
+    REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS,
     IS_DEBUG_MODE,
   } = env;
 
   const port = isNonEmptyString(REACT_APP_PORT)
     ? parseInt(REACT_APP_PORT)
     : 3001;
+  const isCodeEditorAutoTypingsEnabled =
+    REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS === 'true';
 
   const CHUNK_SIZE_WARNING_LIMIT = 1024 * 1024; // 1MB
   // Please don't increase this limit for main index chunk
@@ -244,6 +247,14 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         path: 'rollup-plugin-node-polyfills/polyfills/path',
+        ...(isCodeEditorAutoTypingsEnabled
+          ? {}
+          : {
+              'monaco-editor-auto-typings': path.resolve(
+                __dirname,
+                './src/modules/ui/input/code-editor/utils/monacoEditorAutoTypingsDisabled.ts',
+              ),
+            }),
       },
     },
   };
