@@ -1,7 +1,7 @@
 import { useGetAvailablePackages } from '@/logic-functions/hooks/useGetAvailablePackages';
+import { createCodeEditorAutoTypings } from '@/ui/input/code-editor/utils/createCodeEditorAutoTypings';
 import { type EditorProps, type Monaco } from '@monaco-editor/react';
 import { type editor } from 'monaco-editor';
-import { AutoTypings } from 'monaco-editor-auto-typings';
 import { useParams } from 'react-router-dom';
 import { isDefined } from 'twenty-shared/utils';
 import { CodeEditor } from 'twenty-ui/input';
@@ -94,12 +94,10 @@ export const SettingsLogicFunctionCodeEditor = ({
         ]);
       }
 
-      await AutoTypings.create(editor, {
+      await createCodeEditorAutoTypings({
+        editor,
         monaco,
-        preloadPackages: true,
-        onlySpecifiedPackages: true,
         versions: availablePackages,
-        debounceDuration: 0,
       });
     }
   };

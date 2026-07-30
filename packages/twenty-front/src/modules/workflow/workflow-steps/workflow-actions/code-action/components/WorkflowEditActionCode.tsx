@@ -30,11 +30,11 @@ import { useLingui } from '@lingui/react/macro';
 
 import { LogicFunctionTestInputInitEffect } from '@/logic-functions/components/LogicFunctionTestInputInitEffect';
 import { useExecuteLogicFunction } from '@/logic-functions/hooks/useExecuteLogicFunction';
+import { createCodeEditorAutoTypings } from '@/ui/input/code-editor/utils/createCodeEditorAutoTypings';
 import { WorkflowStepFooter } from '@/workflow/workflow-steps/components/WorkflowStepFooter';
 import { CODE_ACTION } from '@/workflow/workflow-steps/workflow-actions/constants/actions/CodeAction';
 import { type Monaco } from '@monaco-editor/react';
 import { type editor } from 'monaco-editor';
-import { AutoTypings } from 'monaco-editor-auto-typings';
 import { useState } from 'react';
 import { Key } from 'ts-key-enum';
 import {
@@ -231,12 +231,10 @@ export const WorkflowEditActionCode = ({
     editor: editor.IStandaloneCodeEditor,
     monaco: Monaco,
   ) => {
-    await AutoTypings.create(editor, {
+    await createCodeEditorAutoTypings({
+      editor,
       monaco,
-      preloadPackages: true,
-      onlySpecifiedPackages: true,
       versions: availablePackages,
-      debounceDuration: 0,
     });
   };
 

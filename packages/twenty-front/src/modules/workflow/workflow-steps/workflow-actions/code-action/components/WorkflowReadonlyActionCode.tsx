@@ -7,9 +7,9 @@ import { WorkflowStepBody } from '@/workflow/workflow-steps/components/WorkflowS
 import { WorkflowEditActionCodeFields } from '@/workflow/workflow-steps/workflow-actions/code-action/components/WorkflowEditActionCodeFields';
 import { getWrongExportedFunctionMarkers } from '@/workflow/workflow-steps/workflow-actions/code-action/utils/getWrongExportedFunctionMarkers';
 import { styled } from '@linaria/react';
+import { createCodeEditorAutoTypings } from '@/ui/input/code-editor/utils/createCodeEditorAutoTypings';
 import { type Monaco } from '@monaco-editor/react';
 import { type editor } from 'monaco-editor';
-import { AutoTypings } from 'monaco-editor-auto-typings';
 import { CodeEditor } from 'twenty-ui/input';
 
 const StyledCodeEditorContainer = styled.div`
@@ -42,12 +42,10 @@ export const WorkflowReadonlyActionCode = ({
     editor: editor.IStandaloneCodeEditor,
     monaco: Monaco,
   ) => {
-    await AutoTypings.create(editor, {
+    await createCodeEditorAutoTypings({
+      editor,
       monaco,
-      preloadPackages: true,
-      onlySpecifiedPackages: true,
       versions: availablePackages,
-      debounceDuration: 0,
     });
   };
 

@@ -97,6 +97,8 @@ This matches Vercel's documented support for custom build commands, output direc
 
 Set `REACT_APP_SERVER_BASE_URL` in Vercel to the public backend API origin. If it is missing, the frontend falls back to Twenty's default URL resolution and a standalone Vercel frontend will show the backend-unreachable error screen.
 
+Keep `REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS` unset or set to `false` on Vercel's current 8 GB build machine. Setting it to `true` enables optional npm package auto-typings in Monaco code editors, but it also bundles `monaco-editor-auto-typings` and its TypeScript-oriented dependency graph.
+
 ### Backend Services
 
 Vercel is enough for the static frontend. The full CRM backend is not a pure static/serverless app. Production needs:
@@ -420,9 +422,9 @@ Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a 
 
 ### CRM Vercel Frontend Build Stabilization
 
-Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b`, and `1b0da878aed69b90feaeb761c0b5862c5e132270` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: package/direct Vite builds skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`; Nx builds correctly reached `twenty-front:build`, transformed all 16,514 modules, and were then killed by Vercel out-of-memory events during chunk rendering.
+Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b`, `1b0da878aed69b90feaeb761c0b5862c5e132270`, and `1bcf77800b4d23bb34f592b5c5221e3797427533` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: package/direct Vite builds skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`; Nx builds correctly reached `twenty-front:build`, transformed all 16,514 modules, and were then killed by Vercel out-of-memory events during chunk rendering. The logs also showed `typescript/lib/typescript.js` entering the browser build through the code-editor auto-typings path.
 
-Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 4096 MB to leave more container headroom for Rollup/Vite native overhead, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL.
+Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 4096 MB to leave more container headroom for Rollup/Vite native overhead, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL. Optional `monaco-editor-auto-typings` support is gated behind `REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS=true`, keeping normal Monaco editing available while excluding the heavy TypeScript-oriented auto-typings bundle from constrained Vercel builds by default.
 
 Temporary: no. This keeps the production frontend on the repository's canonical Nx dependency graph while constraining memory for Vercel's current build container.
 
