@@ -97,7 +97,7 @@ This matches Vercel's documented support for custom build commands, output direc
 
 Set `REACT_APP_SERVER_BASE_URL` in Vercel to the public backend API origin. If it is missing, the frontend falls back to Twenty's default URL resolution and a standalone Vercel frontend will show the backend-unreachable error screen.
 
-Keep `REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS` unset or set to `false` on Vercel's current 8 GB build machine. Setting it to `true` enables optional npm package auto-typings in Monaco code editors, but it also bundles `monaco-editor-auto-typings` and its TypeScript-oriented dependency graph.
+Keep `REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS` unset or set to `false` on Vercel's current 8 GB build machine. Setting it to `true` enables optional npm package auto-typings in Monaco code editors, but it also bundles `monaco-editor-auto-typings` and its TypeScript-oriented dependency graph. This optimization reduces the production module graph, but the full Twenty frontend still requires either a larger Vercel build machine or deeper frontend bundle splitting before the Work Orders shortcut can ship on Vercel.
 
 ### Backend Services
 
@@ -422,11 +422,11 @@ Temporary: no. `cd packages/twenty-front && npx tsgo -p tsconfig.json` is now a 
 
 ### CRM Vercel Frontend Build Stabilization
 
-Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b`, `1b0da878aed69b90feaeb761c0b5862c5e132270`, and `1bcf77800b4d23bb34f592b5c5221e3797427533` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: package/direct Vite builds skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`; Nx builds correctly reached `twenty-front:build`, transformed all 16,514 modules, and were then killed by Vercel out-of-memory events during chunk rendering. The logs also showed `typescript/lib/typescript.js` entering the browser build through the code-editor auto-typings path.
+Issue: the GitHub-triggered Vercel deployments for commits `be1185375297349f9c195d30512e834dca8a609e`, `972c6e702234f8605acace38830a4d6fa221f9cd`, `d7caf03e7bb8654a94cea7e65fdffaa008dcf74b`, `1b0da878aed69b90feaeb761c0b5862c5e132270`, `1bcf77800b4d23bb34f592b5c5221e3797427533`, `d328ba2a82dbff5a46a37ffd8f87720e6bcdf41e`, and `6b145e9dfbd1b1b5bf7c9b5510a4ff09640ff6fa` failed before the frontend Work Orders shortcut could reach production. After Vercel authorization, the deployment logs showed two distinct causes: package/direct Vite builds skipped Nx dependency builds and could not find `twenty-shared/dist/vite.mjs`; Nx builds correctly reached `twenty-front:build` and were then killed by Vercel out-of-memory events during chunk rendering. Gating and aliasing `monaco-editor-auto-typings` reduced the transformed module count from roughly 16,515 to 15,444, but the standard Vercel build machine still exhausted memory.
 
 Resolution: Vercel now uses the Nx build graph again so package dependencies are built before `twenty-front`. The command disables the Nx daemon, forces single-task parallelism, caps the Node heap at 4096 MB to leave more container headroom for Rollup/Vite native overhead, and then runs `scripts/write-vercel-front-env.mjs` to inject the backend URL. Optional `monaco-editor-auto-typings` support is gated behind `REACT_APP_ENABLE_CODE_EDITOR_AUTO_TYPINGS=true`; when the flag is not enabled, Vite aliases that package to a tiny local no-op adapter so normal Monaco editing remains available while the heavy TypeScript-oriented auto-typings bundle is excluded from constrained Vercel builds.
 
-Temporary: no. This keeps the production frontend on the repository's canonical Nx dependency graph while constraining memory for Vercel's current build container.
+Temporary: no. This keeps the production frontend on the repository's canonical Nx dependency graph while constraining memory for Vercel's current build container. Current blocker: the standard Vercel build machine is still too small for the full Twenty frontend. The next release action is to switch the project to a larger Vercel build machine, such as Enhanced, or approve a deeper frontend bundle split that removes heavyweight non-MVP editors/workflow tooling from the production CRM shell.
 
 ## API Keys
 
